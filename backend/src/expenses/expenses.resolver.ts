@@ -40,4 +40,13 @@ export class ExpensesResolver {
 
     return result;
   }
+
+  @Mutation(() => Boolean)
+  public async deleteExpense(
+    @Args({ name: 'id', type: () => String }) id: string,
+  ) {
+    await this.expenseRepository.delete(id);
+
+    return true;
+  }
 }
