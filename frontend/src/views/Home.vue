@@ -8,71 +8,103 @@
               <v-col>
                 <div class="valor">
                   <strong>Entradas</strong>
-                  <h4 class="green--text"><span> R$ </span> 200</h4>
+                  <h4 class="green--text">
+                    {{ formatNumber(income) }}
+                  </h4>
                 </div>
               </v-col>
               <v-divider vertical></v-divider>
               <v-col>
                 <div class="valor">
                   <strong>Saídas</strong>
-                  <h4 class="red--text"><span> R$ </span> 200</h4>
+                  <h4 class="red--text">
+                    {{ formatNumber(expense) }}
+                  </h4>
                 </div>
               </v-col>
             </v-row>
           </v-card-text>
         </v-card>
 
-        <v-list two-line>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>(650) 555-1234</v-list-item-title>
-              <v-list-item-subtitle>Mobile</v-list-item-subtitle>
-            </v-list-item-content>
+        <v-list v-if="expenses.length > 0" two-line>
+          <div v-for="i in expenses" :key="i.id">
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>{{ i.description }}</v-list-item-title>
+                <v-list-item-subtitle
+                  :class="i.value > 0 ? 'green--text' : 'red--text'"
+                  >{{ formatNumber(i.value) }}</v-list-item-subtitle
+                >
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-btn icon @click="() => false">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
 
-            <v-list-item-icon>
-              <v-icon>mdi-message-text</v-icon>
-            </v-list-item-icon>
-          </v-list-item>
-
-          <v-divider></v-divider>
-
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>(650) 555-1234</v-list-item-title>
-              <v-list-item-subtitle>Mobile</v-list-item-subtitle>
-            </v-list-item-content>
-
-            <v-list-item-icon>
-              <v-icon>mdi-message-text</v-icon>
-            </v-list-item-icon>
-          </v-list-item>
-
-          <v-divider></v-divider>
-
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>(650) 555-1234</v-list-item-title>
-              <v-list-item-subtitle>Mobile</v-list-item-subtitle>
-            </v-list-item-content>
-
-            <v-list-item-icon>
-              <v-icon>mdi-message-text</v-icon>
-            </v-list-item-icon>
-          </v-list-item>
-
-          <v-divider></v-divider>
+            <v-divider></v-divider>
+          </div>
         </v-list>
+        <v-list class="text-center" v-else
+          ><v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Não há registros.</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item></v-list
+        >
       </v-col>
     </v-row>
   </div>
 </template>
 
-<script>
-// @ is an alias to /src
+<script lang="ts">
+import { Vue, Component } from "vue-property-decorator";
+import { gql } from "apollo-boost";
+import numberFormat from "@/utils/numberFormat";
 
-export default {
+@Component({
   name: "Home",
-};
+})
+export default class Home extends Vue {
+  expenses: {
+    id: string;
+    description: string;
+    value: number;
+  }[] = [];
+  income = 0;
+  expense = 0;
+
+  formatNumber(n: number) {
+    return numberFormat.format(n / 100);
+  }
+
+  async mounted() {
+    const { data } = await this.$apollo.query({
+      query: gql`
+        {
+          getExpenses {
+            id
+            description
+            createdAt
+            value
+          }
+        }
+      `,
+    });
+
+    this.expenses = data.getExpenses;
+
+    this.income = this.expenses
+      .filter((i) => i.value > 0)
+      .reduce((a, b) => a + b.value, 0);
+
+    this.expense =
+      this.expenses
+        .filter((i) => i.value < 0)
+        .reduce((a, b) => a + b.value, 0) * -1;
+  }
+}
 </script>
 
 <style lang="scss">
@@ -83,14 +115,20 @@ export default {
 
 .valor {
   text-align: center;
-
+  overflow: hidden;
+  white-space: nowrap;
   h4 {
     margin: 5px 0;
-    font-size: 30px;
+    font-size: 20px;
 
     span {
       font-size: 10px;
     }
   }
+}
+
+strong {
+  margin: 30px auto !important;
+  align-items: center;
 }
 </style>

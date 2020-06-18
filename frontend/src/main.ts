@@ -1,14 +1,27 @@
-import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
-import vuetify from './plugins/vuetify';
+import Vue from "vue";
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+import vuetify from "./plugins/vuetify";
+import ApolloClient from "apollo-boost";
+import VueApollo from "vue-apollo";
 
-Vue.config.productionTip = false
+Vue.use(VueApollo);
+
+const apolloClient = new ApolloClient({
+  uri: "http://localhost:3000/graphql",
+});
+
+const apolloProvider = new VueApollo({
+  defaultClient: apolloClient,
+});
+
+Vue.config.productionTip = false;
 
 new Vue({
   router,
   store,
   vuetify,
-  render: h => h(App)
-}).$mount('#app')
+  apolloProvider,
+  render: (h) => h(App),
+}).$mount("#app");
