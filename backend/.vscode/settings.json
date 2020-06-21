@@ -1,0 +1,13 @@
+{
+  "files.associations": {
+    "*.html": "njk"
+  },
+  "emmet.includeLanguages": {
+    "njk": "html",
+    "nunjucks": "html"
+  },
+  "editor.formatOnSave": true,
+  "[njk]": {
+    "editor.formatOnSave": false
+  }
+}
